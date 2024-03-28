@@ -11,14 +11,24 @@ const redis = require('redis');
 const { REDIS_HOST, REDIS_PORT, REDIS_PASSWORD } = process.env;
 
 const redisConfig = {
-    host: REDIS_HOST,
-    port: REDIS_PORT,
+    socket: {
+        host: REDIS_HOST,
+        port: REDIS_PORT
+    },
     password: REDIS_PASSWORD
 }
 
 console.log('redisConfig', redisConfig);
 
-const client = redis.createClient(redisConfig);
+let client = null;
+let ready = false;
+
+const getClient = async () => {
+    client = await redis.createClient(redisConfig).connect();
+    console.log(client)
+    ready = true;
+}
+getClient();
 
 const app = express();
 app.use(express.static('public'));
@@ -35,9 +45,14 @@ app.get('/', (req, res) => {
 });
 
 app.get('/log', async (req, res) => {
-    req.query.userAgent = '';
-    req.query.cookie = '';
-    console.log('log', req.query);
+    try {
+        req.query.userAgent = '';
+        req.query.cookie = '';
+        console.log('log', req.query);
+        if (ready) client.rPush('hVisitor', JSON.stringify(req.query));
+    } catch (err) {
+        console.error(err);
+    }
     res.status(200).send('ok');
 })
 
