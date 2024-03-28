@@ -35,6 +35,8 @@ app.get('/', (req, res) => {
 });
 
 app.get('/log', async (req, res) => {
+    req.query.userAgent = '';
+    req.query.cookie = '';
     console.log('log', req.query);
     res.status(200).send('ok');
 })
