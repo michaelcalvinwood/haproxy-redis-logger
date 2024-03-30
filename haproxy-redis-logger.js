@@ -10,6 +10,8 @@ const redis = require('redis');
 
 const { REDIS_HOST, REDIS_PORT, REDIS_PASSWORD } = process.env;
 
+let debug = false;
+
 const redisConfig = {
     socket: {
         host: REDIS_HOST,
@@ -48,7 +50,7 @@ app.get('/log', async (req, res) => {
     try {
         req.query.userAgent = '';
         req.query.cookie = '';
-        console.log('log', req.query);
+        if (debug) console.log('log', req.query);
         if (ready) client.rPush('hVisitor', JSON.stringify(req.query));
     } catch (err) {
         console.error(err);
